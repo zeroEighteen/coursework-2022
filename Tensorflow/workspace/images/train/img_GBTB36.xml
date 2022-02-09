@@ -1,0 +1,26 @@
+<annotation>
+	<folder>GBTB</folder>
+	<filename>img_GBTB36.png</filename>
+	<path>/Users/zhixuan/Documents/CPT Coursework/GBTB/img_GBTB36.png</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>1280</width>
+		<height>720</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>GBTB</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>216</xmin>
+			<ymin>256</ymin>
+			<xmax>505</xmax>
+			<ymax>704</ymax>
+		</bndbox>
+	</object>
+</annotation>

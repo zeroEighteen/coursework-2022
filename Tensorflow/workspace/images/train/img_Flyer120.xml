@@ -1,0 +1,26 @@
+<annotation>
+	<folder>Flyer</folder>
+	<filename>img_Flyer120.png</filename>
+	<path>/Users/ElliotKoh/Documents/training images/v2/Flyer/img_Flyer120.png</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>1280</width>
+		<height>720</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>Flyer</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>374</xmin>
+			<ymin>64</ymin>
+			<xmax>808</xmax>
+			<ymax>489</ymax>
+		</bndbox>
+	</object>
+</annotation>
