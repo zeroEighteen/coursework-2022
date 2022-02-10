@@ -1,5 +1,0 @@
-.env*
-courework/imageExport/*
-__pycache__
-.DS_Store
-old_data
