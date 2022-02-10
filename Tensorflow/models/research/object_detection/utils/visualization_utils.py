@@ -1209,6 +1209,7 @@ def visualize_boxes_and_labels_on_image_array(
             else:
               class_name = 'N/A'
             display_str = str(class_name)
+            print(display_str)
         if not skip_scores:
           if not display_str:
             display_str = '{}%'.format(round(100*scores[i]))
@@ -1272,8 +1273,8 @@ def visualize_boxes_and_labels_on_image_array(
           keypoint_edges=keypoint_edges,
           keypoint_edge_color=color,
           keypoint_edge_width=line_thickness // 2)
-
-  return image
+          
+  return image, display_str
 
 
 def add_cdf_image_summary(values, name):

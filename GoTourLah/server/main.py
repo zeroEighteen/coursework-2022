@@ -1,16 +1,12 @@
 from pyexpat import model
 import sys
-# sys.path.append("..")
+sys.path.append("..")
 
 import os
 import cv2
 import socket
 import time
-# import shared.k as k
-# Replacing shared.k with plain old variable declarations
-CAMERA_WIDTH = 320
-CAMERA_HEIGHT = 320
-BUFFER_SIZE = 65536
+import shared.k as k
 from rtp import RTP
 import numpy as np
 import matplotlib.pyplot as plt
@@ -19,6 +15,9 @@ from object_detection.utils import label_map_util
 from object_detection.utils import config_util
 from object_detection.utils import visualization_utils as viz_utils
 from object_detection.builders import model_builder
+from statistics import mode
+import random
+
 # import tensorboard as tb # Workaround from https://github.com/pytorch/pytorch/issues/47139
 # tf.io.gfile = tb.compat.tensorflow_stub.io.gfile # Workaround from https://github.com/pytorch/pytorch/issues/47139
  
@@ -55,43 +54,23 @@ def detect_fn(image):
 
     return detections, prediction_dict, tf.reshape(shapes, [-1])
 category_index = label_map_util.create_category_index_from_labelmap(labels_path, use_display_name=True) # Load labels
+print(category_index)
+print(type(category_index))
 
+# if __name__ == "__main__":
+#   s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # RTP over UDP over IPv4
+#   s.bind((socket.gethostname(), 1447))
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # RTP over UDP over IPv4
+s.bind((socket.gethostname(), k.SERVER_ADDR))
+stc_packet_seq = random.randint(1, 9999) # https://en.wikipedia.org/wiki/Real-time_Transport_Protocol
 
-# Load model and save
-# print('Loading model...', end='')
-# start = time.time() # Start time count
-# # Load saved model and build the detection function
-# detect_fn = tf.saved_model.load(savedmodel_path)
-
-# end = time.time() # End time count
-# duration = end - start
-# print('Done! Took {} seconds'.format(duration))
-# #@elliot
-# pb_file = os.path.join(model_path, 'saved_model.pb')
-
-
-# Read the graph.
-# with tf.io.gfile.GFile(pb_file, 'rb') as f:
-#     graph_def = tf.compat.v1.GraphDef()
-#     graph_def.ParseFromString(f.read())
-# gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=1)
-# with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
-#     sess.graph.as_default()
-#     tf.import_graph_def(graph_def, name='')
-
-if __name__ == "__main__":
-  s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # RTP over UDP over IPv4
-  s.bind((socket.gethostname(), 1447))
-
-  while True:
+while True:
     # Receive image
-    data, address = s.recvfrom(BUFFER_SIZE)
+    cts_data, cts_address = s.recvfrom(k.BUFFER_SIZE)
+    cts_payload = RTP().fromBytes(cts_data).payload
     print("Received.")
-    s.sendto(data, address)
 
-    payload = RTP().fromBytes(data).payload
-
-    npdata = np.frombuffer(bytes(payload), dtype=np.uint8)
+    npdata = np.frombuffer(bytes(cts_payload), dtype=np.uint8)
     image = cv2.imdecode(npdata, cv2.IMWRITE_JPEG_QUALITY)
 
     image_np_expanded = np.expand_dims(image, axis=0)
@@ -103,57 +82,36 @@ if __name__ == "__main__":
     image_np_with_detections = image.copy()
 
     viz_utils.visualize_boxes_and_labels_on_image_array(
-          image_np_with_detections,
-          detections['detection_boxes'][0].numpy(),
-          (detections['detection_classes'][0].numpy() + label_id_offset).astype(int),
-          detections['detection_scores'][0].numpy(),
-          category_index,
-          use_normalized_coordinates=True,
-          max_boxes_to_draw=200,
-          min_score_thresh=.30,
-          agnostic_mode=False)
+            image_np_with_detections,
+            detections['detection_boxes'][0].numpy(),
+            (detections['detection_classes'][0].numpy() + label_id_offset).astype(int),
+            detections['detection_scores'][0].numpy(),
+            category_index,
+            use_normalized_coordinates=True,
+            max_boxes_to_draw=200,
+            min_score_thresh=.70,
+            agnostic_mode=False)
+
+    temp  = (detections['detection_classes'][0].numpy())
+    # print(type(temp))
+    temp = temp.astype(int)
+    # print(type(temp))
+    # print(temp)
+    temp2  = (detections['detection_classes'][0].numpy()+1)
+    # print(temp2)
+    # print(type(temp2))
+
+    final = category_index[mode(temp) + 1]['name']
+    print(category_index[mode(temp) + 1]['name'])
+
+    s.sendto(bytes(final.encode()), (socket.gethostname(), k.CLIENT_ADDR))
+    stc_packet_seq += 1
 
     # Display output
     cv2.imshow('object detection', cv2.resize(image_np_with_detections, (800, 600)))
 
     if cv2.waitKey(25) & 0xFF == ord('q'):
         break
-    # Provide path to an image for testing
-    # image_height, image_width, _ = image.shape
-    # image = cv2.resize(image, (224, 224))
-    # image = image[:, :, [2, 1, 0]] # BGR2RGB
-    
-    # outputs = sess.run([sess.graph.get_tensor_by_name('num_detections:0'),
-    #             sess.graph.get_tensor_by_name('detection_scores:0'),
-    #             sess.graph.get_tensor_by_name('detection_boxes:0'),
-    #             sess.graph.get_tensor_by_name('detection_classes:0')],  
-    #             feed_dict={
-    #                       'image_tensor:0': image.reshape(1,
-    #                         image.shape[0],
-    #                         image.shape[1],3)})
 
-    # Visualize the results
-    # font = cv2.FONT_HERSHEY_SIMPLEX
-    
-    # for i in range(num_detections):
-    #     classId = int(outputs[3][0][i])
-    #     print(classId)
-    #     score = float(outputs[1][0][i])
-    #     bbox = [float(v) for v in outputs[2][0][i]]
-    #     if True:
-    #         x = bbox[1] * image_width
-    #         y = bbox[0] * image_height
-    #         right = bbox[3] * image_width
-    #         bottom = bbox[2] * image_height
-    #         cv2.rectangle(image,
-    #                       (int(x), int(y)),
-    #                       (int(right), int(bottom)),
-    #                       (225, 255, 0),
-    #                       thickness=2)
-    #         cv2.putText(image,str(class_list[classId-1]),(int(x),int(y)), font, 1, (200,0,0), 3, cv2.LINE_AA)
-    #         print('SCORE:',score, ', Class:',class_list[classId-1], ', BBox:',int(x),int(y),int(right),int(bottom))
-    # cv2.imshow("Image", image)
-    # if cv2.waitKey(25) & 0xFF == ord('q'):
-    #   break
 
 cv2.destroyAllWindows()
