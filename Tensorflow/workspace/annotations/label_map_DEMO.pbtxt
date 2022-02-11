@@ -1,0 +1,8 @@
+item { 
+	name:'hello'
+	id:1
+}
+item { 
+	name:'test'
+	id:2
+}

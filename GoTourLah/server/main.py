@@ -1,4 +1,4 @@
-# <------------------------------------Import relevant libraries------------------------------------>
+# <------------------------------------[Ryan][Elliot] Import relevant libraries------------------------------------>
 print("Loading...")
 import sys
 sys.path.append("..")
@@ -16,10 +16,10 @@ from object_detection.utils import config_util  # object decttion library: Add-o
 from object_detection.utils import visualization_utils as viz_utils  # object decttion library: Add-on for Tensorflow
 from object_detection.builders import model_builder  # object decttion library: Add-on for Tensorflow
 
-# <------------------------------------Setting up the model------------------------------------>
+# <------------------------------------[Elliot] Setting up the model------------------------------------>
 # Creating variables for manipulating path to load/use the model
 model_dir = "/Users/ElliotKoh/Documents/Programming/School/coursework-final/Tensorflow/workspace/models/my_ssd_mobnet/export/"
-labels_path = model_dir + "official/label_map.pbtxt"
+labels_path = model_dir + "/label_map.pbtxt"
 pipeline_config_path = model_dir + "pipeline.config"
 checkpoint_dir = model_dir + "checkpoint/"
 
@@ -51,21 +51,24 @@ def detection_func(image):
 # Load labels from label map
 category_index = label_map_util.create_category_index_from_labelmap(labels_path, use_display_name=True) 
 print("-" * 50)
-print("Server setup is completed. \nHit the \"Q\" key to quit the server program anytime.")
+print("Server setup is completed. \nAs this program is supposed to run on a server, no specialised quitting execution has been created. Used Control+C to quit the program.")
 print("-" * 50)
-# <------------------------------------Setting up wireless data transfer------------------------------------>
+# <------------------------------------[Ryan] Setting up wireless data transfer------------------------------------>
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # RTP over UDP over IPv4
 s.bind((socket.gethostname(), k.SERVER_ADDR))
 stc_packet_seq = random.randint(1, 9999) # https://en.wikipedia.org/wiki/Real-time_Transport_Protocol
 
 # <------------------------------------Main program loop------------------------------------>
+# Within the loop, all parts related to WIRELESS DATA TRANSFER and OPENCV was done by Ryan
+# Within the loop, all parts related to MACHINE LEARNING was done by Elliot
+# Intergration efforts were done by Elliot
 print("Entering main program loop.\nPlease start the client-side program. (run \"sudo python main.py\" in the correct directory.)")
 print("-" * 50)
 while True:
     # Receive image from client
     cts_data, cts_address = s.recvfrom(k.BUFFER_SIZE)
     cts_payload = RTP().fromBytes(cts_data).payload
-    print("Received data from client.")
+    # print("Received data from client.") # Originally written for debugging purposes, now commented out
 
     # Process sent image for detection
     npdata = np.frombuffer(bytes(cts_payload), dtype=np.uint8)
@@ -98,14 +101,7 @@ while True:
             class_name = category_index[classes[0] + 1]['name']
         except:
             continue
-    print(class_name)
-    #  temp = temp.astype(int)
-    # count0 = len(temp[temp==0])
-    # count1 = len(temp[temp==1])
-    # print(count0)
-    # print(count1)
-    # detected = category_index[mode(temp) + 1]['name']
-    # print("Detected: " + str(category_index[mode(temp) + 1]['name']))
+    # print(class_name) # Originally written for debugging purposes, now commented out
 
     # Send detected class name to client
     s.sendto(bytes(class_name.encode()), (socket.gethostname(), k.CLIENT_ADDR))
@@ -114,8 +110,5 @@ while True:
     # Display output
     cv2.imshow('Server Demonstration', cv2.resize(image_np_with_detections, (1280, 720)))
 
-    # Hit Q as an escape key
-    if cv2.waitKey(25) & 0xFF == ord('q'):
-        break
-
-cv2.destroyAllWindows()
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        continue
