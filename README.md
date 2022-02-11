@@ -5,8 +5,10 @@
 ## Installation & Setup
 
 1. Clone the repository from GitHub.
-2. Install Python 3.9.6 (other versions may fail to function).
-3. Run `python ./start.py` from the project root directory to install packages and run the program.
+2. Install Python 3.x.x (ensure you have pip).
+<!-- 3. Run `python ./start.py` from the project root directory to install packages and run the program. -->
+2. Run `pip3 install virtualenv`.
+3. In the project root directory, run `source venv/bin/activate`.
 4. Open 2 instances of Terminal.app (or Visual Studio Code Terminals).
 5. On one Terminal, enter `cd server; python main.py`. On the other Terminal, enter `cd client; sudo python main.py`. (Important that server starts first because it has to be ready to receive the images from client)
 
