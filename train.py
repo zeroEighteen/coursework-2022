@@ -43,7 +43,6 @@ with tf.io.gfile.GFile(config_file_path, "r") as f:
     text_format.Merge(proto_str, pipeline_config)
 
 # <------------------------------------Settings for config file------------------------------------>
-
 batch_size = int(input("Default batch size is 4. Enter custom batch size:")) # User input for batch size for training 
 if str(batch_size) == "":
   batch_size = 4
