@@ -1,9 +1,10 @@
-# <------------------------------------Import relevant libraries------------------------------------>
+# <------------------------------------[Ryan][Elliot] Import relevant libraries------------------------------------>
+print("Loading...")
 import sys
 sys.path.append("..")
 
 import cv2 # OpenCV library: for webcam usage and detection usage
-import random # random library: for wireless transfer
+import random # random library: for wireless transferh
 import timeit # timeit library: for timing the sending of data
 import socket # socket library: for wireless trasnfer
 from shared.rtp import rtp # shared module: self-written for sharing variables between client and server
@@ -11,10 +12,8 @@ import shared.k as k # shared module: self-written for sharing variables between
 import numpy as np # numpy library: for detection and much data manipulation
 import keyboard as kb # keyboard library: for simulating keyboard keys as physical on-device buttons
 
-# <------------------------------------Setting up Text-To-Speech------------------------------------>
-
-# ------- done by zhi xuan -------
-from numpy import int16
+# <------------------------------------[ZX] Setting up Text-To-Speech------------------------------------>
+# <------------------------All code within the following "block"  is written by Zhi Xuan unless otherwise stated------------------------->
 import pyttsx3                                                               # pip3 install pyttsx3
 from googletrans import Translator, constants                                # pip3 install googletrans==3.1.0a0, pip3 uninstall googletrans
 
@@ -35,6 +34,7 @@ adjustValue = ""
 language = ""
 User_Input_Change_Voice_Properties = ""
 User_Input_Continue_Customisation = ""
+User_Input_Continue = ""
 Selected_Lang = ""
 available_name_code_dict = {}
 translation_codes = []
@@ -124,6 +124,10 @@ def sublang(lang): # Function to return any available accents of the language wh
         pyttsx_code__translation_code.append(convert_pyttsx3_code_to_google_trans_code(pyttsx_code__translation_code[0]))                               # Adding the derived google translate code into the variable that is to be returned
     
     return pyttsx_code__translation_code                                                                                                                # Returns the codes that are to be used in other functions, such as translation and voice type when speaking
+
+
+print("Hello, my name is {}. I will be your guide for today's tour!".format(pyttxs_get_voice_name()))       # Introduce pyttsx3 voice to user. Indicating start of tour
+speak(translate("Hello my name is {}. I will be your guide for today's tour!".format(pyttxs_get_voice_name()),translation_code))
 
 # --- print deafult settings to see if user wants to change them ---
 print("Default Language Used: English (GB)")
@@ -298,44 +302,25 @@ while True:                                                                     
     else:
         print("Invalid Input Detected. Please enter an input shown in brackets.")
         pass
+# <------------------------------------Zhi Xuan's part ends------------------------------------>
 
-
-# while True:                                                                                                 # Let the program speak about whatever label is detected by the machine learning
-#     speak(translate(gather_obj_description("!!!!!"),translation_code)) #replace "!!!!!" with variable that gives detected label name
-#     print("iteration done") #delete this later
-# <------------------------------------Setting up wireless data transfer------------------------------------>
+# <------------------------------------[Ryan] Setting up wireless data transfer------------------------------------>
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP over IPv4
 s.bind((socket.gethostname(), 1234))
 cts_packetSeq = random.randint(1, 9999) # https://en.wikipedia.org/wiki/Real-time_Transport_Protocol
 
-# <------------------------------------Setting up camera------------------------------------>
+# <------------------------------------[Ryan] Setting up camera------------------------------------>
 # Start camera
 camera_id = 1
 cap = cv2.VideoCapture(camera_id)
-print("Your webcam should ahve been turned on at this stage. \nIf your camera has not turned on, please manually change camera_id to be greater than the current camera_id value by 1.")
-# for x in range(5):
-#   cap = cv2.VideoCapture(x)
-#   isSuccess, image = cap.read()
-#   print("Attempting to connect to camera id: " + str(x))
-#   if isSuccess == True:
-#     print("Successfully connected camera id: " + str(x)) 
-#     break
-#   else:
-#     print("Unable to connect to camera ids 0 to 4. It is likely an error on your device. Terminating program.")
-#     raise "A problem occured with starting the camera: " + str(BaseException)
-    
-# except:
-#   try:
-#     cap = cv2.VideoCapture(1)
-#   except BaseException as error:
-#     print("A problem occured with starting the camera: " + str(BaseException))
+print("Your webcam should have been turned on at this stage. \nIf your camera has not turned on, please manually change camera_id to be greater than the current camera_id value by 1.")
 
 # Configuring camera properties: includes height, width and max framerate
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, k.CAMERA_WIDTH)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, k.CAMERA_HEIGHT)
 cap.set(cv2.CAP_PROP_FPS, 15)
 
-# <------------------------------------Miscellaneous configuration------------------------------------>
+# <------------------------------------[Elliot] Miscellaneous configuration------------------------------------>
 # Declaring variables for use in main loop
 current = ""
 prev = ""
@@ -345,6 +330,9 @@ prevTime = timeit.default_timer()
 
 print("Setup complete. Entering main loop.")
 # <------------------------------------Main program loop------------------------------------>
+# Within the loop, all parts related to WIRELESS DATA TRANSFER and OPENCV was done by Ryan
+# Within the loop, all parts related to MACHINE LEARNING was done by Elliot
+# Intergration efforts were done by Elliot
 while True:
   # Timer to run image sending and receiving code every 0.5 seconds
   currentTime = timeit.default_timer()
@@ -374,13 +362,12 @@ while True:
     s.sendto(cts_data, (socket.gethostname(), k.SERVER_ADDR))
     cts_packetSeq += 1
 
-    # Receiving class name from server
+    # Receiving and decoding class name from server
     stc_data, stc_addr = s.recvfrom(k.BUFFER_SIZE)
-    # print(stc_data.decode("utf-8"))
-
     current = str(stc_data.decode("utf-8"))
-    print(current)
+    # print(current) # Originally written for debugging purposes, now commented out
 
+    # Checks that the current detected object is consistent via ensuring 4 objects detected in a row are the same
     if current == prev and current != "":
       consec_count += 1
     elif current != prev:
@@ -388,17 +375,22 @@ while True:
 
     if consec_count == 4:                    
       currentObj = current
-      print("current object detected: " + currentObj)
+    #   print("current object detected: " + currentObj) # Originally written for debugging purposes, now commented out
       consec_count = 0
     prev = current
-    print("consec_count: " + str(consec_count))
+    # print("consec_count: " + str(consec_count)) # Originally written for debugging purposes, now commented out
 
-  if kb.is_pressed("space") == True:
-    print('space was pressed')
+# checks for key pressed; Keys are currently placeholders for pushbuttons on a Raspberry Pi
+  if kb.is_pressed("space") == True: # If spacebar is pressed, the object name and description will be outputted
     speak(translate(gather_obj_description(currentObj), translation_code))
-  elif kb.is_pressed("h") == True:
-    print("Quit program XD")
+  elif kb.is_pressed("h") == True: # If "h" key is pressed, the program will end, signifying the end of the tour
+      print("Quitting Client")
+      break
 
-
+# Stopping related libraries 
 s.close()
 cap.release()
+
+# <------------------------------------[Zhi Xuan] Ending sequence------------------------------------>
+print("Tour has ended. Thank you for your patronage at GoTourLah.")                # Indicate to user that the program an trip has ended.
+speak(translate("Tour has ended. Thank you for your patronage at GoTourLah",translation_code))

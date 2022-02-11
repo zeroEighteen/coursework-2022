@@ -1,7 +1,9 @@
 .git
 collected_data/
 .env*
-courework/imageExport/*
 __pycache__
 .DS_Store
 old_data
+./GoTourLah/app
+collect.py
+train.py
